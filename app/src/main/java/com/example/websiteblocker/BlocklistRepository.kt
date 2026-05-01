@@ -1,6 +1,7 @@
 package com.example.websiteblocker
 
 import android.content.Context
+import androidx.core.content.edit
 
 class BlocklistRepository(context: Context) {
 
@@ -12,12 +13,12 @@ class BlocklistRepository(context: Context) {
         val normalized = normalize(domain)
         if (normalized.isEmpty()) return
         val updated = getAll().toMutableSet().apply { add(normalized) }
-        prefs.edit().putStringSet("domains", updated).apply()
+        prefs.edit { putStringSet("domains", updated) }
     }
 
     fun remove(domain: String) {
         val updated = getAll().toMutableSet().apply { remove(domain) }
-        prefs.edit().putStringSet("domains", updated).apply()
+        prefs.edit { putStringSet("domains", updated) }
     }
 
     // Strip protocol, www prefix, paths, and lowercase

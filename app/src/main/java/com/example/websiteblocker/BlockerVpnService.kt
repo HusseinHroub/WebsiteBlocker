@@ -84,7 +84,7 @@ class BlockerVpnService : VpnService() {
             val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val lp = cm.getLinkProperties(cm.activeNetwork)
             val dns = lp?.dnsServers?.firstOrNull()
-            if (dns != null && !dns.hostAddress.equals("10.0.0.2")) dns
+            if (dns != null && dns.hostAddress != "10.0.0.2") dns
             else InetAddress.getByName("8.8.8.8")
         } catch (e: Exception) {
             InetAddress.getByName("8.8.8.8")
@@ -94,17 +94,24 @@ class BlockerVpnService : VpnService() {
     private fun buildNotification(): Notification {
         val channelId = "vpn_channel"
         val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        if (nm.getNotificationChannel(channelId) == null) {
-            nm.createNotificationChannel(
-                NotificationChannel(channelId, "VPN Status", NotificationManager.IMPORTANCE_LOW)
-            )
+        return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            if (nm.getNotificationChannel(channelId) == null) {
+                nm.createNotificationChannel(
+                    NotificationChannel(channelId, "VPN Status", NotificationManager.IMPORTANCE_LOW)
+                )
+            }
+            Notification.Builder(this, channelId)
+                .setContentTitle("Website Blocker active")
+                .setSmallIcon(android.R.drawable.ic_menu_close_clear_cancel)
+                .build()
+        } else {
+            @Suppress("DEPRECATION")
+            Notification.Builder(this)
+                .setContentTitle("Website Blocker active")
+                .setSmallIcon(android.R.drawable.ic_menu_close_clear_cancel)
+                .build()
         }
-        return Notification.Builder(this, channelId)
-            .setContentTitle("Website Blocker active")
-            .setSmallIcon(android.R.drawable.ic_menu_close_clear_cancel)
-            .build()
     }
-
     companion object {
         const val ACTION_STOP = "com.example.websiteblocker.STOP"
         private const val NOTIFICATION_ID = 1
